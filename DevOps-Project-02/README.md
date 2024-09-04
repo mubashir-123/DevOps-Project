@@ -1,67 +1,246 @@
-# Deploy Scalable VPC Architecture on AWS Cloud
+# AWS Fully Serverless Architecture with CI/CD
 
-![AWS-Cloud](https://imgur.com/AXD50yl.png)
+## **Introduction:**
 
-### TABLE OF CONTENTS
+Enter the world of serverless computing, where developers are freed from server management. Deploying code becomes a breeze, with a focus on deploying functions rather than wrestling with servers. Originally synonymous with FaaS, serverless technology began with **AWS Lambda** from **Amazon Web Services**. It has now evolved to cover various managed services like databases and storage, expanding its scope beyond its initial function-centric approach.
 
-1. [Goal](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/README.md#goal)
-2. [Pre-Requisites](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/README.md#pre-requisites)
-3. [Pre-Deployment](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/README.md#pre-deployment)
-4. [VPC Deployment](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/README.md#vpc-deployment)
-5. [Validation](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/README.md#validation)
+Despite its name, serverless doesn’t mean a server-free existence. Instead, it signals a shift in responsibility — developers no longer need to manage, provision, or see the underlying servers. This allows them to concentrate on crafting efficient code without the distractions of server intricacies.
 
-## Goal
+In this article, we’ll explore a practical example of a Fully Serverless Architecture implemented using Terraform — a popular IaC tool and CI/CD implemented using GitHub Actions. The code repository we’ll be examining is hosted on GitHub: [GitHub Repository](https://github.com/NotHarshhaa/DevOps-Projects/tree/master/DevOps-Project-22)
 
-Deploy a Modular and Scalable Virtual Network Architecture with Amazon VPC.
+I have a NodeJS Cloud Native API which I have used to deploy in this architecture. This API is specifically designed to make use of AWS serverless services.
 
-## Pre-Requisites
+**Architecture:**
 
-1. You must be having an [AWS account](https://aws.amazon.com/) to create infrastructure resources on AWS cloud.
-2. [Source Code](https://github.com/NotHarshhaa/DevOps-Projects/blob/master/DevOps-Project-02/html-web-app)
+![](https://miro.medium.com/v2/resize:fit:1146/1*NN5kTCl1ljuIJ-2dfT7bMQ.gif)
 
-## Pre-Deployment
+The aim of this project is to deploy API to AWS Public cloud using only serverless components.
 
-Customize the application dependencies mentioned below on AWS EC2 instance and create the Golden AMI.
+### API code is available [here](https://github.com/NotHarshhaa/DevOps-Projects/tree/master/DevOps-Project-22/serverless-api).
 
-1. AWS CLI
-2. Install Apache Web Server
-3. Install Git
-4. Cloudwatch Agent
-5. Push custom memory metrics to Cloudwatch.
-6. AWS SSM Agent
+Following are the serverless services used in this project:
 
-## VPC Deployment
+- API Gateway
+- Lambda
+- Aurora Serverless (MySql)
+- AWS Simple Storage Service (S3)
+- AWS Secrets Manager
+- AWS Certificate Manager (ACM)
+- Cloudwatch Logs and Metrics
+- Route53
 
-1. Build VPC network ( 192.168.0.0/16 ) for Bastion Host deployment as per the architecture shown above.
-2. Build VPC network ( 172.32.0.0/16 ) for deploying Highly Available and Auto Scalable application servers as per the architecture shown above.
-3. Create NAT Gateway in Public Subnet and update Private Subnet associated Route Table accordingly to route the default traffic to NAT for outbound internet connection.
-4. Create Transit Gateway and associate both VPCs to the Transit Gateway  for private communication.
-5. Create Internet Gateway for each VPC and Public Subnet associated Route Table accordingly to route the default traffic to IGW for inbound/outbound internet connection.
-6. Create Cloudwatch Log Group with two Log Streams to store the VPC Flow Logs of both VPCs.
-7. Enable Flow Logs for both VPCs and push the Flow Logs to Cloudwatch Log Groups and store the logs in the respective Log Stream for each VPC.
-8. Create Security Group for bastion host allowing port 22 from public.
-9. Deploy Bastion Host EC2 instance in the Public Subnet with EIP associated.
-10. Create S3 Bucket to store application specific configuration.
-11. Create Launch Configuration with below configuration.
-    1. Golden AMI
-    2. Instance Type – t2.micro
-    3. Userdata to pull the code from Bitbucket Repository  to document root folder of webserver and start the httpd service.
-    4. IAM Role granting access to Session Manager and to S3 bucket created in the previous step to pull the configuration. (Do  not grant S3 Full Access)
-    5. Security Group allowing port 22 from Bastion Host and Port 80 from Public.
-    6. Key Pair
-12. Create Auto Scaling Group with Min: 2 Max: 4 with two Private Subnets associated to 1a and 1b zones.
-13. Create Target Group and associate it with ASG.
-14. Create Network Load balancer in Public Subnet and add Target Group as target.
-15. Update route53 hosted zone with CNAME record routing the traffic to NLB.
+Secrets Manager stores the database credentials securely and the credentials are rotated every 7 days.
+Lambda is launched in the VPC private subnet. The access to secrets manager from within the VPC is through VPC Interface endpoint and access to S3 is through VPC Gateway Endpoint.
 
-## Validation
+## Terraform
 
-1. As DevOps Engineer login to Private Instances via Bastion Host.
-2. Login to AWS Session Manager and access the EC2 shell from console.
-3. Browse web application from public internet browser using domain name and verify that page loaded.
+Terraform is an open-source infrastructure as code software tool that enables you to safely and predictably create, change, and improve infrastructure.
 
-# Hit the Star! ⭐
+## Setting up Infrastructure using Terraform 
+ 
+The terraform init command initializes a working directory containing Terraform configuration files:
+```
+terraform init
+```
 
-***If you are planning to use this repo for learning, please hit the star. Thanks!***
+The terraform plan command creates an execution plan, which lets you preview the changes that Terraform plans to make to your infrastructure:
+```
+terraform plan
+```
+
+The terraform apply command executes the actions proposed in a Terraform plan to create, update, or destroy infrastructure:
+```
+terraform apply
+```
+
+The terraform destroy command is a convenient way to destroy all remote objects managed by a particular Terraform configuration:
+```
+terraform destroy
+```
+
+## **Key Services and Features:**
+
+Let’s explore the key services and features of this AWS Architecture:
+
+1. **AWS Lambda:**  
+    AWS Lambda, the pioneer in serverless computing, introduces virtual functions that eliminate the need for manual server management. With a focus on short executions, Lambda operates on-demand, ensuring efficient resource utilization. Its automated scaling feature adapts seamlessly to varying workloads, guaranteeing optimal performance. Lambda is Integrated with many programming languages and a whole AWS suite of services and can easily be monitored through AWS CloudWatch. **AWS Lambda** serves as an ideal solution for executing our Cloud Native API code efficiently, all while maintaining minimal costs.
+
+2. **Aurora Serverless:**  
+    Aurora, a powerhouse in the realm of cloud databases, seamlessly supports both Postgres and MySQL. Positioned as “AWS cloud optimized,” Aurora boasts a remarkable 5x performance improvement over MySQL on RDS and over 3x the performance over Postgres on RDS. Offering up to 15 replicas with a replication process faster than MySQL. With instantaneous failover, it is inherently designed for High Availability (HA), although it comes at a slightly higher cost than RDS (20% more), its efficiency and performance make it a compelling choice to store our API’s structured data.
+
+3. **Amazon Simple Storage Service (S3):**  
+    S3 is one of the very popular offerings from AWS. S3 is highly available and durable object based storage service. S3 allows storing objects (files) in buckets with globally unique name. In this case, we are using S3 to store API’s binary image data (JPEG, JPG, PNG).
+
+4. **API Gateway: AWS Lambda** coupled with **API Gateway** presents a hassle-free solution with zero infrastructure management. API Gateway not only supports HTTP, REST Protocols but also the WebSocket Protocol and also adeptly handles API versioning (such as v1, v2) and diverse environments (dev, test, prod). API Gateway also covers authentication and authorization, along with the ability to create API keys and manage request throttling. Additionally, it excels in transforming and validating requests and responses, allowing for the generation of SDKs and API specifications. With the added capability to cache API responses, API Gateway offer a comprehensive and efficient ecosystem for developing and managing APIs.
+
+Some of the managed services used in this Architecture are:
+
+1. **AWS CloudWatch:**
+    Amazon CloudWatch is a robust monitoring and observability service provided by AWS, enabling users to collect and track metrics, collect and monitor log files, and set alarms. Logs and Metrics from Lambda functions are sent to CloudWatch for troubleshooting and observability purposes.
+
+2. **VPC:** The foundation of AWS Infrastructure is the VPC, which isolates resources and provides a private network for the application. VPC can be divided into multiple public (With Internet connectivity) and private subnets.
+
+3. **Amazon Route53:** A highly available, scalable, fully managed and *Authoritative* DNS. The only AWS service which provides 100% availability SLA. It is also a Domain Registrar. Route 53 translates human friendly hostnames into machine IP addresses.
+
+# **Security Considerations:**
+
+1. **AWS Certificate Manager (ACM):**
+    Responsible for Managing, Provisioning and deploying TLS certificates. SSL/TLS certificates provides security in transit for HTTP websites (HTTPS). Supports both public and private TLS certificates. Free of charge. ACM is used to load/associate TLS certificates on Application load balancer, API Gateway, CloudFront, etc.
+
+2. **AWS Secrets Manager:** AWS Secrets Manager is meant for storing secrets. It has the capability to rotate secrets every X days (automates the generation of new secrets on rotation by making use of Lambda in the background). It is tightly Integrated with Amazon RDS (MySQL, PostgreSQL, Aurora), so it can securely store the database credentials. Secrets that are stored in Secrets Manager are encrypted using Key Management Service (KMS).
+
+3. **Security Groups:** Security groups act as firewall for all the instances like EC2, Lambda (through ENI), Interface Endpoints (through ENI), Databases, within the VPC. In the above architecture, Security groups were used to restrict access to database. Further, we can use security groups to restrict access to Interface endpoint that is responsible for accessing Secrets Manager.
+
+4. **VPC Endpoints:** Utilizing VPC Endpoints, enables the establishment of connections to AWS services through a **private network** rather than relying on the public Internet. These endpoints are designed to be both redundant and horizontally scalable. **IGW** and **NATGW** can be avoided to access the AWS services. In our case, we used VPC Interface endpoint (deploys ENI within the subnet) to access secrets manager privately from within the VPC and VPC Gateway endpoint (deploys a Gateway, must be used as a target in the route tables) to access S3 privately from within the VPC.
+
+5. **IAM ROLES:** Lambda functions in the private subnets are assigned an IAM role with necessary permissions to send Logs and Metrics to CloudWatch, access S3 bucket, access Aurora database and also to create, describe and delete Elastic Network Interface (ENI) for lambda within the VPC.
+
+# **CI/CD:**
+
+CI and CD stand for continuous integration and continuous delivery/ deployment. In very simple terms, **Continuous Integration** is a modern software development practice in which incremental code changes are made frequently and reliably to a central code repository like GitHub, Bit Bucket, etc. and **Continuous Delivery** is a software development practice that works in conjunction with CI, CD takes over during the final stages to ensure it’s packaged with everything it needs to deploy to any environment at any time (where as, **Continuous deployment** deploys the applications automatically, eliminating the need for human intervention). The CI/CD pipeline for the above architecture consists of the following:
+
+![](https://miro.medium.com/v2/resize:fit:802/1*xo6Jp9JX8JBOMi5YIGkm_Q.jpeg)
+
+1. **Git:** Git is a distributed version control system that tracks the changes in your application code. Application code can be committed and pushed to a remote cloud version control service like **Github**.
+
+2. **Github Actions:** Github Actions is a feature of Github that Automates the building, testing and deployment of your application code. When a developer raises a Pull Request, a Github Actions workflow can be triggered to run a series of tests before merging the latest code to the main repository. In the above pipeline, after merging the latest code, another Github Actions Workflow can be triggered to build or package the latest code and deploy to Lambda using **AWS CLI** commands.
+
+A **dedicated IAM user** with relevant permissions can be created for Github Actions for deployment. **Access keys** and **secret keys** can be passed through Github Actions Secrets in the workflow configuration.
+
+# Serverless-api
+
+This Cloud Native API is designed to run on AWS Infrastructure while making use of AWS serverless services like Secrets Manager, Lambda functions, API Gateway, etc.
+
+## Prerequisites for running the application locally:
+
+```javascript
+// install dependencies
+npm install
+// start the server script
+npm start
+// run test cases
+npm test
+```
+
+## Endpoint URLs
+
+```javascript
+// 1. Route to check if the server is healthy
+GET /healthz
+// 2. GET route to retrieve user details
+GET /v1/user/{userId}
+// 3. POST route to add a new user to the database
+POST /v1/user
+// 4. PUT route to update user details
+PUT /v1/user/{userId}
+```
+
+### Sample JSON Response for GET
+
+```json
+{
+  "id": 1,
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "username": "jane.doe@example.com",
+  "account_created": "2016-08-29T09:12:33.001Z",
+  "account_updated": "2016-08-29T09:12:33.001Z"
+}
+```
+
+### Sample JSON Request for POST
+
+```json
+{
+  "username": "jane.doe@example.com",
+  "password": "password",
+  "first_name": "Jane",
+  "last_name": "Doe",  
+}
+```
+
+### Sample JSON Request for PUT
+
+```json
+{
+  "password": "password",
+  "first_name": "Jane",
+  "last_name": "Doe",  
+}
+```
+
+## Endpoint URLs
+
+```javascript
+// 1. GET route to retrieve product details
+GET /v1/product/{productId}
+// 2. POST route to add a new product to the database
+POST /v1/product
+// 3. PUT route to update product details
+PUT /v1/product/{productId}
+// 4. PATCH route to update product details partially
+PUT /v1/product/{productId}
+// 5. DELETE route to delete product details
+PUT /v1/product/{productId}
+```
+
+### Sample JSON Response for GET
+
+```json
+{
+  "id": 1,
+  "name": null,
+  "description": null,
+  "sku": null,
+  "manufacturer": null,
+  "quantity": 1,
+  "date_added": "2016-08-29T09:12:33.001Z",
+  "date_last_updated": "2016-09-29T09:12:33.001Z",
+  "owner_user_id": 1
+}
+```
+
+### Sample JSON Request for POST
+
+```json
+{
+  "name": null,
+  "description": null,
+  "sku": null,
+  "manufacturer": null,
+  "quantity": 1
+}
+```
+
+### Sample JSON Request for PUT
+
+```json
+{
+  "name": null,
+  "description": null,
+  "sku": null,
+  "manufacturer": null,
+  "quantity": 1
+}
+```
+
+### Sample JSON Request for PATCH
+
+```json
+{
+  "name": null,
+  "description": null,
+  "sku": null,
+  "manufacturer": null,
+  "quantity": 1
+}
+```
+---
+
+# Thank you
+
+Thank you for taking the time to work on this tutorial/labs. Let me know what you thought!
 
 #### Author by [Harshhaa Reddy](https://github.com/NotHarshhaa)
+
+### Ensure to follow me on GitHub. Please star/share this repository!
